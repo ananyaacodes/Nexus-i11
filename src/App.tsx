@@ -11,6 +11,7 @@ import HeritageJourney from './components/HeritageJourney/HeritageJourney';
 import StorySection from './components/StorySection';
 import CTA from './components/CTA';
 import Footer from './components/Footer';
+import { WhySection } from './components/WhySection';
 import Register from './pages/Register';
 
 // Code-split modals so they are only fetched when requested by the user
@@ -45,6 +46,8 @@ export default function App() {
           onOpenApplyModal={() => setIsApplyModalOpen(true)}
           onOpenChallengeModal={() => setIsTrailerModalOpen(true)}
         />
+
+        <WhySection />
 
         {/* 3. CONTINUOUS HERITAGE JOURNEY (Connecting artwork gta6/abthfg.png spanning Section One & Section Two) */}
         <HeritageJourney
