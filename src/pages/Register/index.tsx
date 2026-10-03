@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { AlertCircle, CheckCircle2, Loader2, ArrowRight } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Loader2, ArrowRight, ArrowLeft } from 'lucide-react';
 
 const formSchema = z.object({
   teamName: z
@@ -16,17 +16,7 @@ const formSchema = z.object({
     .string()
     .regex(/^\d{10}$/, 'Phone number must be exactly 10 digits'),
   college: z.string().min(1, 'College and year information is required').trim(),
-  track: z
-    .enum([
-      'Education & Skills',
-      'Health & Wellbeing',
-      'Livelihoods',
-      'Climate & Nature',
-      'Culture & Heritage',
-      'Open/Other',
-      '',
-    ])
-    .optional(),
+  track: z.string().trim().max(100).optional(),
   members: z.string().optional(),
   consent: z.literal(true, {
     message: 'You must agree to the terms and conditions',
@@ -40,6 +30,10 @@ export default function Register() {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'loading' | 'success' | 'error' | 'conflict' | 'rate-limit'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
+  const initialEmail = typeof window !== 'undefined'
+    ? new URLSearchParams(window.location.search).get('email') || ''
+    : '';
+
   const {
     register,
     handleSubmit,
@@ -50,7 +44,7 @@ export default function Register() {
     defaultValues: {
       teamName: '',
       leaderName: '',
-      email: '',
+      email: initialEmail,
       phone: '',
       college: '',
       track: '',
@@ -58,6 +52,12 @@ export default function Register() {
       website: '',
     },
   });
+
+  const handleReturnHome = (e: React.MouseEvent) => {
+    e.preventDefault();
+    window.history.pushState({}, '', '/');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  };
 
   const onSubmit = async (data: FormData) => {
     if (data.website) {
@@ -111,12 +111,21 @@ export default function Register() {
           <p className="text-[#64748b] mb-8">
             Your telemetry has been securely transmitted. Awaiting further instruction.
           </p>
-          <button
-            onClick={() => setSubmitStatus('idle')}
-            className="bg-gradient-to-r from-[#ffd7d2] to-[#ffe4de] text-[#0f1115] px-8 py-3 font-mono text-sm uppercase tracking-widest hover:opacity-90 transition-opacity border border-transparent hover:border-[#f59e0b]"
-          >
-            Acknowledge
-          </button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button
+              onClick={() => setSubmitStatus('idle')}
+              className="w-full sm:w-auto bg-gradient-to-r from-[#ffd7d2] to-[#ffe4de] text-[#0f1115] px-8 py-3 font-mono text-sm uppercase tracking-widest hover:opacity-90 transition-opacity border border-transparent hover:border-[#f59e0b]"
+            >
+              Acknowledge
+            </button>
+            <a
+              href="/"
+              onClick={handleReturnHome}
+              className="w-full sm:w-auto bg-[#13171d] text-[#ededed] px-8 py-3 font-mono text-sm uppercase tracking-widest hover:text-white border border-[#272f3d] hover:border-[#f59e0b] transition-all text-center"
+            >
+              Return Home
+            </a>
+          </div>
         </div>
       </div>
     );
@@ -126,9 +135,21 @@ export default function Register() {
   const labelClasses = "block font-mono text-xs text-[#64748b] uppercase tracking-wider mb-2";
 
   return (
-    <div className="min-h-screen bg-[#07080a] text-white py-16 px-4 sm:px-6 lg:px-8 font-sans">
+    <div className="min-h-screen bg-[#07080a] text-white py-12 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-12">
+        {/* Navigation Return Link */}
+        <div className="mb-6">
+          <a
+            href="/"
+            onClick={handleReturnHome}
+            className="inline-flex items-center gap-2 text-xs font-mono text-[#f59e0b] hover:text-white uppercase tracking-wider transition-colors cursor-pointer group"
+          >
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            <span>Return to Hack for Good</span>
+          </a>
+        </div>
+
+        <div className="text-center mb-10">
           <span className="text-[#f59e0b] font-mono text-sm uppercase tracking-widest block mb-3">
             SECTOR 02 · REGISTRATION
           </span>
@@ -283,12 +304,15 @@ export default function Register() {
                 {...register('track')}
               >
                 <option value="">Select a track...</option>
+                <option value="AI & DATA">01. AI & DATA</option>
+                <option value="WEB & APP">02. WEB & APP</option>
+                <option value="SUSTAINABILITY">03. SUSTAINABILITY</option>
+                <option value="SOCIAL IMPACT">04. SOCIAL IMPACT</option>
+                <option value="OPEN INNOVATION">05. OPEN INNOVATION</option>
                 <option value="Education & Skills">Education & Skills</option>
                 <option value="Health & Wellbeing">Health & Wellbeing</option>
-                <option value="Livelihoods">Livelihoods</option>
                 <option value="Climate & Nature">Climate & Nature</option>
-                <option value="Culture & Heritage">Culture & Heritage</option>
-                <option value="Open/Other">Open/Other</option>
+                <option value="Other">Other</option>
               </select>
             </div>
 

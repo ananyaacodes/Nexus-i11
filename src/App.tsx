@@ -1,119 +1,77 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
-import React, { useState, lazy, Suspense } from 'react';
-import { useLenis } from './hooks/useLenis';
-import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import HeritageJourney from './components/HeritageJourney/HeritageJourney';
-import StorySection from './components/StorySection';
-import CTA from './components/CTA';
-import Footer from './components/Footer';
+import { useEffect } from 'react';
+import { initSmoothScroll } from './lib/smoothScroll';
+import { RouterProvider, useRouter } from './lib/router';
+import { Navbar } from './sections/Navbar';
+import { Hero } from './sections/Hero';
+import { About } from './sections/About';
+import { Tracks } from './sections/Tracks';
+import { Timeline } from './sections/Timeline';
+import { Prizes } from './sections/Prizes';
+import { PartnersTeaser } from './sections/PartnersTeaser';
+import { CallToAction } from './sections/CallToAction';
+import { Footer } from './sections/Footer';
+import { PartnersPage } from './pages/PartnersPage';
 import Register from './pages/Register';
 
-// Code-split modals so they are only fetched when requested by the user
-const ApplicationModal = lazy(() => import('./components/ApplicationModal'));
-const TrailerModal = lazy(() => import('./components/TrailerModal'));
+function AppContent() {
+  const { path } = useRouter();
 
-export default function App() {
-  useLenis();
-  const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
-  const [isTrailerModalOpen, setIsTrailerModalOpen] = useState(false);
+  useEffect(() => {
+    const cleanup = initSmoothScroll();
+    return () => {
+      cleanup?.();
+    };
+  }, []);
 
-  if (window.location.pathname === '/register') {
+  // Dedicated Hidden /partners page (pure full-screen interactive experience)
+  if (path === '/partners') {
+    return <PartnersPage />;
+  }
+
+  // Working Squad Registration page (backend connected)
+  if (path === '/register') {
     return <Register />;
   }
 
+  // Primary Homepage View
   return (
-    <div className="min-h-screen bg-[#07080a] text-white selection:bg-[#f59e0b] selection:text-black overflow-x-hidden">
-      {/* Accessible skip link for keyboard navigation */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 z-50 px-4 py-2 bg-[#f59e0b] text-black font-mono text-xs font-bold shadow-lg"
-      >
-        Skip to main content
-      </a>
+    <div className="min-h-screen bg-[#111315] text-[#F1EEE7] flex flex-col">
+      {/* 1. Navbar */}
+      <Navbar />
 
-      {/* 1. Fixed/Sticky Navigation with Reference Branding & Menu */}
-      <Navbar onOpenApplyModal={() => setIsApplyModalOpen(true)} />
+      <main className="flex-1 flex flex-col">
+        {/* 2. Hero */}
+        <Hero />
 
-      <main id="main-content">
-        {/* 2. Full-Screen Cinematic Gateway Hero Experience */}
-        <Hero
-          onOpenApplyModal={() => setIsApplyModalOpen(true)}
-          onOpenChallengeModal={() => setIsTrailerModalOpen(true)}
-        />
+        {/* 3. About Hack for Good */}
+        <About />
 
-        {/* 3. CONTINUOUS HERITAGE JOURNEY (Connecting artwork gta6/abthfg.png spanning Section One & Section Two) */}
-        <HeritageJourney
-          onOpenApplyModal={() => setIsApplyModalOpen(true)}
-          onExploreClick={() => setIsTrailerModalOpen(true)}
-        />
+        {/* 4. Hackathon Tracks */}
+        <Tracks />
 
-        {/* 4. THE BUILDERS: IDEAS BECOME IMPACT */}
-        <StorySection
-          id="builders"
-          actNumber="ACT 02"
-          chapterNumber="CHAPTER 02"
-          eyebrow="THE PEOPLE"
-          heading="IDEAS BECOME IMPACT"
-          supportingCopy="From first prototype to final demonstration, teams turn ideas into working technology with measurable social and technological impact."
-          narrativeParagraphs={[
-            "Thirty-two hand-selected squads—composed of compiler specialists, systems architects, industrial designers, and domain operators—enter the crucible with raw telemetry and exit with verified, production-grade artifacts.",
-            "Teams work directly alongside frontier laboratory leads and frontline humanitarian directors. When the 48-hour sprint concludes, qualifying systems unlock non-dilutive capital grants disbursed directly on Sunday evening."
-          ]}
-          benchmarks={[
-            { label: "SELECTED SQUADS", value: "120 TEAMS" },
-            { label: "CRUCIBLE WINDOW", value: "48 UNBROKEN HRS" },
-            { label: "DEPLOYMENT POOL", value: "$1,200,000 DIRECT" }
-          ]}
-          quote={{
-            text: "Watching senior builders transform a raw problem statement into a running, formally verified kernel in 48 hours is what separates hackathon theater from engineering.",
-            author: "LEAD SYSTEMS AUDITOR"
-          }}
-          ctaText="REGISTER FOR CHALLENGE"
-          onCtaClick={() => setIsApplyModalOpen(true)}
-          imageProps={{
-            primaryImage: "/assets/jason_1.webp",
-            secondaryImage: "/assets/jason_3.webp",
-            backdropImage: "/assets/background.webp",
-            altText: "Systems engineer stress-testing high-concurrency runtime nodes",
-            frameId: "SECTOR 02 · SPRINT CRUCIBLE",
-            coordinates: "20.2961° N · 85.8245° E",
-            telemetryTag: "HIGH-CONCURRENCY RUNTIME",
-            variant: "overlap-duo",
-            overlapDirection: "left"
-          }}
-          layoutVariant="text-right"
-        />
+        {/* 5. Timeline */}
+        <Timeline />
 
-        {/* 5. Call-To-Action Section (Application Gates) */}
-        <CTA onOpenApplyModal={() => setIsApplyModalOpen(true)} />
+        {/* 6. Prizes */}
+        <Prizes />
+
+        {/* 7. Partners Teaser (Immediately after Prizes and before CallToAction/FAQ) */}
+        <PartnersTeaser />
+
+        {/* 8. Call to Action */}
+        <CallToAction />
       </main>
 
-      {/* 6. Editorial Footer */}
+      {/* 9. Footer */}
       <Footer />
-
-      {/* Suspended Modal Loading for Optimal Initial JS Payload */}
-      {isApplyModalOpen && (
-        <Suspense fallback={null}>
-          <ApplicationModal
-            isOpen={isApplyModalOpen}
-            onClose={() => setIsApplyModalOpen(false)}
-          />
-        </Suspense>
-      )}
-
-      {isTrailerModalOpen && (
-        <Suspense fallback={null}>
-          <TrailerModal
-            isOpen={isTrailerModalOpen}
-            onClose={() => setIsTrailerModalOpen(false)}
-          />
-        </Suspense>
-      )}
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <RouterProvider>
+      <AppContent />
+    </RouterProvider>
   );
 }
